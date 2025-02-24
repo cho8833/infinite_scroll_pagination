@@ -271,7 +271,7 @@ class _PagedLayoutBuilderState<PageKeyType, ItemType>
 
       final isBuildingTriggerIndexItem = index == newPageRequestTriggerIndex;
 
-      if (_hasNextPage && isBuildingTriggerIndexItem && (widget.nextPageStrategy?.call() ?? true)) {
+      if (_hasNextPage && (widget.nextPageStrategy?.call() ?? isBuildingTriggerIndexItem)) {
         // Schedules the request for the end of this frame.
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _pagingController.notifyPageRequestListeners(_nextKey as PageKeyType);
