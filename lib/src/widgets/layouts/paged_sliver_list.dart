@@ -21,6 +21,7 @@ class PagedSliverList<PageKeyType, ItemType> extends StatelessWidget {
     this.addAutomaticKeepAlives = true,
     this.addRepaintBoundaries = true,
     this.addSemanticIndexes = true,
+    this.nextPageStrategy,
     this.itemExtent,
     this.prototypeItem,
     this.semanticIndexCallback,
@@ -43,6 +44,7 @@ class PagedSliverList<PageKeyType, ItemType> extends StatelessWidget {
     this.itemExtent,
     this.semanticIndexCallback,
     this.shrinkWrapFirstPageIndicators = false,
+    this.nextPageStrategy,
     Key? key,
   })  : prototypeItem = null,
         _separatorBuilder = separatorBuilder,
@@ -82,12 +84,15 @@ class PagedSliverList<PageKeyType, ItemType> extends StatelessWidget {
   /// Matches [PagedLayoutBuilder.shrinkWrapFirstPageIndicators].
   final bool shrinkWrapFirstPageIndicators;
 
+  final NextPageStrategy? nextPageStrategy;
+
   @override
   Widget build(BuildContext context) =>
       PagedLayoutBuilder<PageKeyType, ItemType>(
         layoutProtocol: PagedLayoutProtocol.sliver,
         pagingController: pagingController,
         builderDelegate: builderDelegate,
+        nextPageStrategy: nextPageStrategy,
         completedListingBuilder: (
           context,
           itemBuilder,

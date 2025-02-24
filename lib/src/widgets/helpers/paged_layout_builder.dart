@@ -32,6 +32,8 @@ typedef LoadingListingBuilder = Widget Function(
   WidgetBuilder newPageProgressIndicatorBuilder,
 );
 
+typedef NextPageStrategy = bool Function();
+
 /// The Flutter layout protocols supported by [PagedLayoutBuilder].
 enum PagedLayoutProtocol { sliver, box }
 
@@ -53,6 +55,7 @@ class PagedLayoutBuilder<PageKeyType, ItemType> extends StatefulWidget {
     required this.errorListingBuilder,
     required this.completedListingBuilder,
     required this.layoutProtocol,
+    this.nextPageStrategy,
     this.shrinkWrapFirstPageIndicators = false,
     Key? key,
   }) : super(key: key);
@@ -92,6 +95,8 @@ class PagedLayoutBuilder<PageKeyType, ItemType> extends StatefulWidget {
   /// [loadingListingBuilder], [errorListingBuilder], and
   /// [completedListingBuilder] have to return a Sliver widget.
   final PagedLayoutProtocol layoutProtocol;
+
+  final NextPageStrategy? nextPageStrategy;
 
   @override
   State<PagedLayoutBuilder<PageKeyType, ItemType>> createState() =>
@@ -179,7 +184,7 @@ class _PagedLayoutBuilderState<PageKeyType, ItemType>
                   // value. That way, we are safe if [itemList] value changes
                   // while Flutter rebuilds the widget (due to animations, for
                   // example.)
-                  (context, index) => _buildListItemWidget(
+                  (context, index) => buildListItemWidget(
                     context,
                     index,
                     itemList!,
@@ -191,7 +196,7 @@ class _PagedLayoutBuilderState<PageKeyType, ItemType>
               case PagingStatus.completed:
                 child = widget.completedListingBuilder(
                   context,
-                  (context, index) => _buildListItemWidget(
+                  (context, index) => buildListItemWidget(
                     context,
                     index,
                     itemList!,
@@ -210,7 +215,7 @@ class _PagedLayoutBuilderState<PageKeyType, ItemType>
               case PagingStatus.subsequentPageError:
                 child = widget.errorListingBuilder(
                   context,
-                  (context, index) => _buildListItemWidget(
+                  (context, index) => buildListItemWidget(
                     context,
                     index,
                     itemList!,
@@ -255,7 +260,7 @@ class _PagedLayoutBuilderState<PageKeyType, ItemType>
 
   /// Connects the [_pagingController] with the [_builderDelegate] in order to
   /// create a list item widget and request more items if needed.
-  Widget _buildListItemWidget(
+  Widget buildListItemWidget(
     BuildContext context,
     int index,
     List<ItemType> itemList,
@@ -266,7 +271,7 @@ class _PagedLayoutBuilderState<PageKeyType, ItemType>
 
       final isBuildingTriggerIndexItem = index == newPageRequestTriggerIndex;
 
-      if (_hasNextPage && isBuildingTriggerIndexItem) {
+      if (_hasNextPage && isBuildingTriggerIndexItem && (widget.nextPageStrategy?.call() ?? true)) {
         // Schedules the request for the end of this frame.
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _pagingController.notifyPageRequestListeners(_nextKey as PageKeyType);
